@@ -1,0 +1,93 @@
+import os
+import pymongo
+from pymongo import MongoClient, ReadPreference
+import json
+import re
+import time
+import urllib2
+import datetime
+from bson.objectid import ObjectId
+import mongo_helpers
+from conf import mongo_conf, es_conf
+
+_MONGO_PARAMS_DB = 'params_database'
+_MONGO_PARAMS_COLLECTION = 'params_collection'
+_ES_HOST = 'es_host'
+_FETCH_LIMIT = 80000
+
+_categories = ['Infowindow-pg', 'Infowindow-rent', 'Infowindow-new-projects', 'Infowindow-buy', 'Form',
+               'Filters-rent', 'Filters-buy', 'Filters-pg', 'search', 'page_type', 'np_list_select', 'details_page', 'search']
+
+
+def push_data(offset, fetch_limit):
+    put = {"index": {"_index": "live_events_v1", "_type": "wevent"}}
+    ef = open('es_update_events.json', 'w')
+    error_file = open('error_logs.txt', 'a')
+    curPgUrl = coll.find({'_id': {'$gte': yutcoid, '$lte': tutcoid}, 'category': {
+                         '$in': categories}}, {'_id': 0}).skip(offset).limit(fetch_limit)
+    for doc in curPgUrl:
+        try:
+            if not 'category' in doc or doc['category'] not in categories:
+                continue
+            put['index']['_type'] = doc['category']
+            json.dump(put, ef)
+            ef.write('\n')
+            json.dump(doc, ef)
+            ef.write('\n')
+        except Exception, e:
+            print e
+            error_file.write("For document: "+str(doc)+" -> "+str(e) + "\n")
+    ef.close()
+    error_file.close()
+    data = open('es_update_events.json', 'rb').read()
+    if not data:
+        return
+    print "{0} sending data to es".format(str(datetime.datetime.now()))
+    req = urllib2.Request(es_conf[_ES_HOST]+'_bulk', data)
+    req.add_header('Content-Length', '%d' % len(data))
+    req.add_header('Content-Type', 'application/octet-stream')
+    res = urllib2.urlopen(req)
+    print "{0} sending success with offset, {1}".format(str(datetime.datetime.now()), offset)
+
+
+def process_pipeline(server_object_ids_range):
+    fetch_limit = _FETCH_LIMIT
+    # records = 100000
+    records = coll.find({'_id': {'$gte': server_object_ids_range[0], '$lte': server_object_ids_range[
+                        1]}, 'category': {'$in': _categories}}, {'_id': 0}).count() + fetch_limit
+    offset = 0
+    while (records > 0):
+        try:
+            push_data(offset, fetch_limit)
+        except (pymongo.errors.OperationFailure) as e:
+            print "mongo operation failure error, ", e
+            continue
+        offset += fetch_limit
+        records -= fetch_limit
+        print "fetched another limit of  "+str(fetch_limit)
+
+
+def obtain_time_ranges():
+    params_collection = mongo_helpers.get_mongo_db_con(
+        database=_MONGO_PARAMS_DB)[mongo_conf[_MONGO_PARAMS_COLLECTION]]
+    lastUpdatedTimeStamp = int(params_collection.find_one(
+        {'elasticsearch.lastUpdated': {'$exists': 'true'}})['elasticsearch']['lastUpdated'])
+    currentTimeStamp = int(time.time()*1000)
+    print str(lastUpdatedTimeStamp), " ", str(currentTimeStamp)
+    return [lastUpdatedTimeStamp, currentTimeStamp]
+
+
+def cross_mongo_copy():
+    #lastUpdated = 1409250599992
+    timestamp_range = obtain_time_ranges()
+    server_object_ids_range = mongo_helpers.get_server_object_ids(
+        timestamp_range)
+    process_pipeline(server_object_ids_range)
+    params_collection.update({'elasticsearch.lastUpdated': {'$exists': 'true'}}, {
+                             '$set': {'elasticsearch.lastUpdated': str(timestamp_range[1])}})
+
+
+if __name__ == '__main__':
+    cross_mongo_copy()
+
+# "{elasticsearch:{lastUpdated:str(1426012200000)}}"
