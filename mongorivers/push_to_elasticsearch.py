@@ -2,15 +2,13 @@ import mongo_helpers
 import mongo_fetch_data
 import push_data_to_es
 from basic_imports import LOGGER
-from conf import mongo_conf, es_conf
+from conf import mongo_conf
 
 
 _MONGO_PARAMS_DB = 'params_db'
 _MONGO_PARAMS_COLLECTION = 'params_collection'
 _MONGO_RAW_DATA_DB = 'raw_data_db'
 _MONGO_RAW_DATA_COLLECTION = 'raw_data_collection'
-_ES_HOST = 'es_host'
-_ES_INDEX = 'es_index'
 _NUMBER_OF_DAYS = 30
 
 

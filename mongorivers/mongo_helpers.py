@@ -5,6 +5,7 @@ import datetime
 import itertools
 import time
 from conf import mongo_conf
+from basic_imports import LOGGER
 #current_day =datetime.datetime.now().strftime('%d/%m/%Y')
 
 _MONGO_URI = 'mongo_uri'

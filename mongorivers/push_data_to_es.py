@@ -1,4 +1,9 @@
+from conf import es_conf
+from basic_imports import LOGGER
+
 _ES_READ_FILE = 'es_update_events.json'
+_ES_HOST = 'es_host'
+_ES_INDEX = 'es_index'
 
 def push_data_file_to_es():
     data = open(_ES_READ_FILE,'rb').read()

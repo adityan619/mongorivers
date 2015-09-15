@@ -1,3 +1,4 @@
+from basic_imports import LOGGER
 
 def fetch_mongo_data_for_fetch_range(collection, offset, fetch_limit,query_filters):
     _mongo_fetched_data_dict = []
