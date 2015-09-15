@@ -16,7 +16,7 @@ def get_mongo_db_con(database=_MONGO_DB):
     connection = MongoClient(mongo_conf[_MONGO_URI]+'/'+mongo_conf[database])[mongo_conf[database]]
     return connection
 
-def get_server_object_ids(_,**kwargs):
+def get_server_object_ids(**kwargs):
     # y = datetime.datetime.now().date() - datetime.timedelta(days=1)
     # t= datetime.datetime.now().date()
     if kwargs is not None:
