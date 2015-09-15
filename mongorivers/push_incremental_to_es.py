@@ -21,9 +21,7 @@ def process_pipeline(collection, mongo_fetch_generator, query_filters):
         push_data_to_es.push_data_file_to_es()
 
 
-def obtain_time_ranges():
-    params_collection = mongo_helpers.get_mongo_db_con(
-        database=_MONGO_PARAMS_DB)[mongo_conf[_MONGO_PARAMS_COLLECTION]]
+def obtain_time_ranges(params_collection):
     lastUpdatedTimeStamp = int(params_collection.find_one(
         {'elasticsearch.lastUpdated': {'$exists': 'true'}})['elasticsearch']['lastUpdated'])
     currentTimeStamp = int(time.time()*1000)
@@ -31,8 +29,9 @@ def obtain_time_ranges():
 
 
 def push_incremental_data_to_es():
-    #lastUpdated = 1409250599992
-    timestamp_range = obtain_time_ranges()
+    params_collection = mongo_helpers.get_mongo_db_con(
+        database=_MONGO_PARAMS_DB)[mongo_conf[_MONGO_PARAMS_COLLECTION]]
+    timestamp_range = obtain_time_ranges(params_collection)
     LOGGER.debug(
         "Started river to push data to ES for {0}".format(timestamp_range))
     mongo_object_ids_range = mongo_helpers.get_server_object_ids(
