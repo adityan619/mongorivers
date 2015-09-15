@@ -1,3 +1,4 @@
+import time
 import mongo_helpers
 import mongo_fetch_data
 import push_data_to_es
@@ -37,10 +38,10 @@ def push_incremental_data_to_es():
     LOGGER.debug(
         "Started river to push data to ES for {0}".format(timestamp_range))
     server_object_ids_range = mongo_helpers.get_server_object_ids(
-        timestamp_range)
+        timestamp_range=timestamp_range)
     raw_data_collection = mongo_helpers.get_mongo_db_con(
         database=_MONGO_RAW_DATA_DB)[mongo_conf[_MONGO_RAW_DATA_COLLECTION]]
-    mongo_fetch_generator = mongo_helpers.create_mongo_fetch_generator(raw_data_collection)
+    mongo_fetch_generator = mongo_helpers.create_mongo_fetch_generator(raw_data_collection,server_object_ids_range)
     process_pipeline(raw_data_collection,mongo_fetch_generator,server_object_ids_range)
     params_collection.update({'elasticsearch.lastUpdated': {'$exists': 'true'}}, {
                              '$set': {'elasticsearch.lastUpdated': str(timestamp_range[1])}})

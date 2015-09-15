@@ -12,6 +12,7 @@ _MONGO_RAW_DATA_COLLECTION = 'raw_data_collection'
 _ES_HOST = 'es_host'
 _ES_INDEX = 'es_index'
 _FETCH_LIMIT = 80000
+_NUMBER_OF_DAYS = 30
 
 
 _categories = ['Infowindow-pg', 'Infowindow-rent', 'Infowindow-new-projects', 'Infowindow-buy', 'Form',
@@ -29,12 +30,12 @@ def process_pipeline(collection, mongo_fetch_generator, server_object_ids_range)
 
 def push_data_to_elasticsearch():
     for category in _categories:
-        for date_range in get_date_range_list(_NUMBER_OF_DAYS):
+        for date_range in mongo_helpers.get_date_range_list(_NUMBER_OF_DAYS):
             print "Started pushing events for {category} of {date_range}".format(category=category, date_range=date_range)
             raw_data_collection = mongo_helpers.get_mongo_db_con(
                     database=_MONGO_RAW_DATA_DB)[category]
             server_object_ids_range = mongo_helpers.get_server_object_ids(date_range)
-            mongo_fetch_generator = mongo_helpers.create_mongo_fetch_generator(raw_data_collection)
+            mongo_fetch_generator = mongo_helpers.create_mongo_fetch_generator(raw_data_collection,server_object_ids_range)
             process_pipeline(raw_data_collection,mongo_fetch_generator,server_object_ids_range)
 
 

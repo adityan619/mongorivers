@@ -20,13 +20,13 @@ def get_server_object_ids(_,**kwargs):
     # y = datetime.datetime.now().date() - datetime.timedelta(days=1)
     # t= datetime.datetime.now().date()
     if kwargs is not None:
-        if time_range in kwargs:
-            prev, curr = kwargs[time_range]
+        if 'time_range' in kwargs:
+            prev, curr = kwargs['time_range']
             print prev, curr
-            prev_timestamp =  int(time.mktime(y.timetuple())*1000)
-            curr_timestamp = int(time.mktime(t.timetuple())*1000)
-        elif timestamp_range in kwargs:
-            prev_timestamp, curr_timestamp = kwargs[timestamp_range]
+            prev_timestamp =  int(time.mktime(prev.timetuple())*1000)
+            curr_timestamp = int(time.mktime(curr.timetuple())*1000)
+        elif 'timestamp_range' in kwargs:
+            prev_timestamp, curr_timestamp = kwargs['timestamp_range']
         else:
             raise Exception('Keyword Error')
 
