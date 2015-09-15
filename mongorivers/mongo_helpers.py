@@ -9,14 +9,18 @@ from conf import mongo_conf
 
 _MONGO_URI = 'mongo_uri'
 _MONGO_DB = 'test'
+_FETCH_LIMIT = 80000
 
 _date_range_list = ( [(datetime.datetime.today().date()-datetime.timedelta(x+1)) , (datetime.datetime.today().date()-datetime.timedelta(x))]  for x in itertools.count())
 
 def get_mongo_db_con(database=_MONGO_DB):
-    connection = MongoClient(mongo_conf[_MONGO_URI]+'/'+mongo_conf[database])[mongo_conf[database]]
+    connection = MongoClient(mongo_conf[_MONGO_URI]+mongo_conf[database])[mongo_conf[database]]
     return connection
 
 def get_server_object_ids(**kwargs):
+    """
+        # for a given timestamp_range, compute the corresponding ObjectIds of MongoDB
+    """
     # y = datetime.datetime.now().date() - datetime.timedelta(days=1)
     # t= datetime.datetime.now().date()
     if kwargs is not None:
@@ -38,10 +42,9 @@ def get_server_object_ids(**kwargs):
 
     return prev_utc_objectId, curr_utc_objectId
 
-def create_mongo_fetch_generator(collection, server_object_ids_range):
+def create_mongo_fetch_generator(collection, query_filters):
     fetch_limit = _FETCH_LIMIT
-    records = collection.find({'_id': {'$gte': server_object_ids_range[0], '$lte': server_object_ids_range[
-        1]}, 'category': {'$in': _categories}}, {'_id': 0}).count() + fetch_limit
+    records = collection.find(query_filters, {'_id': 0}).count() + fetch_limit
     offset = 0
     while (records > 0):
         yield offset, fetch_limit
