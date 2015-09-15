@@ -9,6 +9,6 @@ mongo_conf = {
 }
 
 es_conf = {
-    'es_host' : 'http://localhost:9200'
+    'es_host' : 'http://localhost:9200/'
     'es_index' : 'live_events_v1',
 }

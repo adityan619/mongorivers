@@ -1,5 +1,6 @@
 import json
 from conf import es_conf
+import urllib2
 from basic_imports import LOGGER
 
 _ES_READ_FILE = 'es_update_events.json'
