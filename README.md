@@ -1,4 +1,5 @@
 # mongorivers
+[![build status](https://img.shields.io/travis/mzabriskie/axios.svg?style=flat-square)](https://travis-ci.org/adityan619/mongorivers)
 Has modules to fetch data from mongodb and push it into other services
 
 This is a very basic framework to use it as a river from MongoDB to ES.
